@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Children's Interactive Piano</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .piano-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .title {
+            text-align: center;
+            color: #ff6b6b;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .instructions {
+            text-align: center;
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .keyboard {
+            display: flex;
+            justify-content: center;
+            position: relative;
+            height: 200px;
+            margin: 20px 0;
+        }
+
+        .key {
+            position: relative;
+            border: 3px solid #ddd;
+            border-radius: 0 0 15px 15px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            touch-action: manipulation;
+        }
+
+        .key:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .key.active {
+            transform: translateY(5px) scale(0.98);
+            box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .white-key {
+            width: 60px;
+            height: 200px;
+            background: linear-gradient(to bottom, #ffffff 0%, #f8f8f8 100%);
+            margin: 0 1px;
+            z-index: 1;
+            color: #666;
+        }
+
+        .white-key.active {
+            background: linear-gradient(to bottom, #ff6b6b 0%, #ff5252 100%);
+            color: white;
+        }
+
+        .black-key {
+            width: 40px;
+            height: 130px;
+            background: linear-gradient(to bottom, #333 0%, #111 100%);
+            position: absolute;
+            z-index: 2;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .black-key.active {
+            background: linear-gradient(to bottom, #ff6b6b 0%, #ff5252 100%);
+        }
+
+        /* Position black keys between white keys */
+        .black-key:nth-of-type(1) { left: 45px; }
+        .black-key:nth-of-type(2) { left: 107px; }
+        .black-key:nth-of-type(3) { left: 231px; }
+        .black-key:nth-of-type(4) { left: 293px; }
+        .black-key:nth-of-type(5) { left: 355px; }
+
+        .keyboard-shortcuts {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .shortcut-group {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .shortcut-group h3 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .shortcut-group p {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .keyboard {
+                height: 150px;
+                transform: scale(0.8);
+                transform-origin: center;
+            }
+            
+            .white-key {
+                width: 50px;
+                height: 150px;
+            }
+            
+            .black-key {
+                width: 35px;
+                height: 100px;
+            }
+            
+            .black-key:nth-of-type(1) { left: 37px; }
+            .black-key:nth-of-type(2) { left: 88px; }
+            .black-key:nth-of-type(3) { left: 190px; }
+            .black-key:nth-of-type(4) { left: 241px; }
+            .black-key:nth-of-type(5) { left: 292px; }
+        }
+
+        @media (max-width: 480px) {
+            .piano-container {
+                padding: 20px;
+            }
+            
+            .keyboard {
+                transform: scale(0.7);
+            }
+            
+            .instructions {
+                font-size: 1rem;
+            }
+        }
+
+        /* Accessibility improvements */
+        .key:focus {
+            outline: 3px solid #ff6b6b;
+            outline-offset: 2px;
+        }
+
+        /* Animation for key press */
+        @keyframes keyPress {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(5px) scale(0.98); }
+            100% { transform: translateY(0) scale(1); }
+        }
+
+        .key.animate {
+            animation: keyPress 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="piano-container">
+        <h1 class="title">🎹 My First Piano 🎹</h1>
+        <div class="instructions">
+            Click the keys or use your keyboard to play music!<br>
+            <strong>White keys:</strong> A S D F G H J &nbsp;&nbsp;&nbsp; <strong>Black keys:</strong> W E T Y U
+        </div>
+        
+        <div class="keyboard" id="keyboard">
+            <!-- White keys -->
+            <div class="key white-key" data-note="C4" data-key="a" tabindex="0">C</div>
+            <div class="key white-key" data-note="D4" data-key="s" tabindex="0">D</div>
+            <div class="key white-key" data-note="E4" data-key="d" tabindex="0">E</div>
+            <div class="key white-key" data-note="F4" data-key="f" tabindex="0">F</div>
+            <div class="key white-key" data-note="G4" data-key="g" tabindex="0">G</div>
+            <div class="key white-key" data-note="A4" data-key="h" tabindex="0">A</div>
+            <div class="key white-key" data-note="B4" data-key="j" tabindex="0">B</div>
+            
+            <!-- Black keys -->
+            <div class="key black-key" data-note="C#4" data-key="w" tabindex="0">C#</div>
+            <div class="key black-key" data-note="D#4" data-key="e" tabindex="0">D#</div>
+            <div class="key black-key" data-note="F#4" data-key="t" tabindex="0">F#</div>
+            <div class="key black-key" data-note="G#4" data-key="y" tabindex="0">G#</div>
+            <div class="key black-key" data-note="A#4" data-key="u" tabindex="0">A#</div>
+        </div>
+
+        <div class="keyboard-shortcuts">
+            <div class="shortcut-group">
+                <h3>🎵 How to Play</h3>
+                <p>Click any key with your mouse or finger to hear the sound!</p>
+            </div>
+            <div class="shortcut-group">
+                <h3>⌨️ Keyboard Shortcuts</h3>
+                <p>Use A-S-D-F-G-H-J for white keys<br>Use W-E-T-Y-U for black keys</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ChildrensPiano {
+            constructor() {
+                // Initialize Web Audio API context
+                this.audioContext = null;
+                this.masterGain = null;
+                this.activeNotes = new Map(); // Track currently playing notes
+                
+                this.initAudio();
+                this.bindEvents();
+                
+                // Note frequencies (4th octave)
+                this.noteFrequencies = {
+                    'C4': 261.63,
+                    'C#4': 277.18,
+                    'D4': 293.66,
+                    'D#4': 311.13,
+                    'E4': 329.63,
+                    'F4': 349.23,
+                    'F#4': 369.99,
+                    'G4': 392.00,
+                    'G#4': 415.30,
+                    'A4': 440.00,
+                    'A#4': 466.16,
+                    'B4': 493.88
+                };
+            }
+
+            async initAudio() {
+                try {
+                    // Create audio context (modern browsers)
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // Create master gain node for volume control
+                    this.masterGain = this.audioContext.createGain();
+                    this.masterGain.connect(this.audioContext.destination);
+                    this.masterGain.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+                    
+                    console.log('Audio context initialized successfully');
+                } catch (error) {
+                    console.error('Failed to initialize audio context:', error);
+                }
+            }
+
+            /**
+             * Creates a piano tone using Web Audio API with ADSR envelope
+             * ADSR = Attack, Decay, Sustain, Release for realistic sound
+             */
+            createPianoTone(frequency, duration = 2.0) {
+                if (!this.audioContext) return null;
+
+                const now = this.audioContext.currentTime;
+                
+                // Create oscillator for the fundamental frequency
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                // Use triangle wave for softer, more piano-like sound
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(frequency, now);
+                
+                // Connect audio nodes: oscillator -> gain -> master gain -> speakers
+                oscillator.connect(gainNode);
+                gainNode.connect(this.masterGain);
+                
+                // ADSR Envelope Implementation:
+                // Attack: 0.01s - quick rise to full volume
+                // Decay: 0.1s - drop to sustain level
+                // Sustain: 0.7 - maintain at 70% volume
+                // Release: 1.0s - fade to silence
+                
+                const attackTime = 0.01;
+                const decayTime = 0.1;
+                const sustainLevel = 0.7;
+                const releaseTime = 1.0;
+                
+                // Start at 0 volume
+                gainNode.gain.setValueAtTime(0, now);
+                
+                // Attack phase: ramp up to full volume
+                gainNode.gain.linearRampToValueAtTime(1, now + attackTime);
+                
+                // Decay phase: drop to sustain level
+                gainNode.gain.linearRampToValueAtTime(sustainLevel, now + attackTime + decayTime);
+                
+                // Sustain phase: hold at sustain level
+                gainNode.gain.setValueAtTime(sustainLevel, now + attackTime + decayTime);
+                
+                // Release phase: fade to silence
+                const releaseStart = now + duration - releaseTime;
+                gainNode.gain.setValueAtTime(sustainLevel, releaseStart);
+                gainNode.gain.linearRampToValueAtTime(0, releaseStart + releaseTime);
+                
+                // Start and stop the oscillator
+                oscillator.start(now);
+                oscillator.stop(now + duration);
+                
+                return { oscillator, gainNode };
+            }
+
+            playNote(note) {
+                // Resume audio context if suspended (required by some browsers)
+                if (this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+                
+                const frequency = this.noteFrequencies[note];
+                if (!frequency) return;
+                
+                // Stop any currently playing instance of this note
+                this.stopNote(note);
+                
+                // Create and play new note
+                const audioNodes = this.createPianoTone(frequency);
+                if (audioNodes) {
+                    this.activeNotes.set(note, audioNodes);
+                }
+            }
+
+            stopNote(note) {
+                if (this.activeNotes.has(note)) {
+                    const { gainNode } = this.activeNotes.get(note);
+                    const now = this.audioContext.currentTime;
+                    
+                    // Quick fade out for immediate note stopping
+                    gainNode.gain.cancelScheduledValues(now);
+                    gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+                    gainNode.gain.linearRampToValueAtTime(0, now + 0.1);
+                    
+                    this.activeNotes.delete(note);
+                }
+            }
+
+            bindEvents() {
+                const keys = document.querySelectorAll('.key');
+                
+                // Mouse/touch events for each key
+                keys.forEach(key => {
+                    const note = key.dataset.note;
+                    
+                    // Mouse down / touch start
+                    key.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        this.activateKey(key, note);
+                    });
+                    
+                    key.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.activateKey(key, note);
+                    });
+                    
+                    // Mouse up / touch end
+                    key.addEventListener('mouseup', () => {
+                        this.deactivateKey(key);
+                    });
+                    
+                    key.addEventListener('touchend', () => {
+                        this.deactivateKey(key);
+                    });
+                    
+                    // Mouse leave (in case mouse leaves while pressed)
+                    key.addEventListener('mouseleave', () => {
+                        this.deactivateKey(key);
+                    });
+                    
+                    // Keyboard accessibility
+                    key.addEventListener('keydown', (e) => {
+                        if (e.code === 'Space' || e.code === 'Enter') {
+                            e.preventDefault();
+                            this.activateKey(key, note);
+                        }
+                    });
+                    
+                    key.addEventListener('keyup', (e) => {
+                        if (e.code === 'Space' || e.code === 'Enter') {
+                            this.deactivateKey(key);
+                        }
+                    });
+                });
+                
+                // Global keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    const keyPressed = e.key.toLowerCase();
+                    const keyElement = document.querySelector(`[data-key="${keyPressed}"]`);
+                    
+                    if (keyElement && !keyElement.classList.contains('active')) {
+                        e.preventDefault();
+                        const note = keyElement.dataset.note;
+                        this.activateKey(keyElement, note);
+                    }
+                });
+                
+                document.addEventListener('keyup', (e) => {
+                    const keyPressed = e.key.toLowerCase();
+                    const keyElement = document.querySelector(`[data-key="${keyPressed}"]`);
+                    
+                    if (keyElement) {
+                        this.deactivateKey(keyElement);
+                    }
+                });
+                
+                // Prevent context menu on long press (mobile)
+                document.addEventListener('contextmenu', (e) => {
+                    if (e.target.classList.contains('key')) {
+                        e.preventDefault();
+                    }
+                });
+            }
+
+            activateKey(keyElement, note) {
+                if (keyElement.classList.contains('active')) return;
+                
+                keyElement.classList.add('active');
+                keyElement.classList.add('animate');
+                
+                // Play the note
+                this.playNote(note);
+                
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    keyElement.classList.remove('animate');
+                }, 200);
+            }
+
+            deactivateKey(keyElement) {
+                keyElement.classList.remove('active');
+            }
+        }
+
+        // Initialize the piano when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const piano = new ChildrensPiano();
+            
+            // Add a welcome message for accessibility
+            console.log('🎹 Children\'s Piano loaded! Use mouse, touch, or keyboard to play.');
+        });
+
+        // Handle page visibility changes to manage audio context
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Page is hidden, could pause audio context to save resources
+                console.log('Piano paused');
+            } else {
+                // Page is visible again
+                console.log('Piano ready to play!');
+            }
+        });
+    </script>
+</body>
+</html>
